@@ -38,6 +38,9 @@ class Helios:
             {"type":"function","name":"balanceOf","stateMutability":"view","inputs":[{"name":"address","type":"address"}],"outputs":[{"name":"","type":"uint256"}]},
             {"type":"function","name":"decimals","stateMutability":"view","inputs":[],"outputs":[{"name":"","type":"uint8"}]}
         ]''')
+        self.PAGE_URL = "https://testnet.helioschain.network"
+        self.SITE_KEY = "0x4AAAAAABhz7Yc1no53_eWA"
+        self.CAPTCHA_KEY = None
         self.proxies = []
         self.proxy_index = 0
         self.account_proxies = {}
@@ -60,19 +63,29 @@ class Helios:
         )
 
     def welcome(self):
-        print(
-            f"""
-        {Fore.GREEN + Style.BRIGHT}Helios{Fore.BLUE + Style.BRIGHT} Testnet BOT CDY
-            """
-            f"""
-        {Fore.GREEN + Style.BRIGHT}YetiDAO {Fore.YELLOW + Style.BRIGHT}<Cryptodai3>
-            """
-        )
+        print(Fore.LIGHTGREEN_EX + Style.BRIGHT + "\n" + "═" * 60)
+        print(Fore.GREEN + Style.BRIGHT + "    ⚡ Auto Helios Testnet Automation BOT ⚡")
+        print(Fore.CYAN + Style.BRIGHT + "    ────────────────────────────────")
+        print(Fore.YELLOW + Style.BRIGHT + "    🧠 Project    : Helios - Testnet Automation")
+        print(Fore.YELLOW + Style.BRIGHT + "    🧑‍💻 Author     : YetiDAO")
+        print(Fore.YELLOW + Style.BRIGHT + "    🌐 Status     : Running | Monitoring Tasks...")
+        print(Fore.CYAN + Style.BRIGHT + "    ────────────────────────────────")
+        print(Fore.MAGENTA + Style.BRIGHT + "    🧬 Powered by Cryptodai3 × YetiDAO | Buddy v1.2 🚀")
+        print(Fore.LIGHTGREEN_EX + Style.BRIGHT + "═" * 60 + "\n")
 
     def format_seconds(self, seconds):
         hours, remainder = divmod(seconds, 3600)
         minutes, seconds = divmod(remainder, 60)
         return f"{int(hours):02}:{int(minutes):02}:{int(seconds):02}"
+    
+    def load_2captcha_key(self):
+        try:
+            with open("2captcha_key.txt", 'r') as file:
+                captcha_key = file.read().strip()
+
+            return captcha_key
+        except Exception as e:
+            return None
     
     async def load_proxies(self, use_proxy_choice: bool):
         filename = "proxy.txt"
@@ -545,6 +558,58 @@ class Helios:
 
         return option, choose, rotate
     
+    async def solve_cf_turnstile(self, proxy=None, retries=5):
+        for attempt in range(retries):
+            connector = ProxyConnector.from_url(proxy) if proxy else None
+            try:
+                async with ClientSession(connector=connector, timeout=ClientTimeout(total=60)) as session:
+
+                    if self.CAPTCHA_KEY is None:
+                        return None
+                    
+                    url = f"http://2captcha.com/in.php?key={self.CAPTCHA_KEY}&method=turnstile&sitekey={self.SITE_KEY}&pageurl={self.PAGE_URL}"
+                    async with session.get(url=url) as response:
+                        response.raise_for_status()
+                        result = await response.text()
+
+                        if 'OK|' not in result:
+                            await asyncio.sleep(5)
+                            continue
+
+                        request_id = result.split('|')[1]
+
+                        self.log(
+                            f"{Fore.MAGENTA+Style.BRIGHT} ● {Style.RESET_ALL}"
+                            f"{Fore.BLUE+Style.BRIGHT}Req Id  :{Style.RESET_ALL}"
+                            f"{Fore.WHITE + Style.BRIGHT} {request_id} {Style.RESET_ALL}"
+                        )
+
+                        for _ in range(30):
+                            res_url = f"http://2captcha.com/res.php?key={self.CAPTCHA_KEY}&action=get&id={request_id}"
+                            async with session.get(url=res_url) as res_response:
+                                res_response.raise_for_status()
+                                res_result = await res_response.text()
+
+                                if 'OK|' in res_result:
+                                    turnstile_token = res_result.split('|')[1]
+                                    return turnstile_token
+                                elif res_result == "CAPCHA_NOT_READY":
+                                    self.log(
+                                        f"{Fore.MAGENTA+Style.BRIGHT} ● {Style.RESET_ALL}"
+                                        f"{Fore.BLUE+Style.BRIGHT}Message :{Style.RESET_ALL}"
+                                        f"{Fore.YELLOW + Style.BRIGHT} Captcha Not Ready {Style.RESET_ALL}"
+                                    )
+                                    await asyncio.sleep(5)
+                                    continue
+                                else:
+                                    break
+
+            except Exception as e:
+                if attempt < retries - 1:
+                    await asyncio.sleep(5)
+                    continue
+                return None
+    
     async def user_login(self, account: str, address: str, proxy=None, retries=5):
         url = f"{self.BASE_API}/users/login"
         data = json.dumps(self.generate_payload(account, address))
@@ -594,15 +659,17 @@ class Helios:
                     await asyncio.sleep(5)
                     continue
                 self.log(
-                    f"{Fore.CYAN+Style.BRIGHT}Message   :{Style.RESET_ALL}"
+                    f"{Fore.CYAN+Style.BRIGHT}Faucet    :{Style.RESET_ALL}"
+                    f"{Fore.RED+Style.BRIGHT} GET Eligibility Status Failed {Style.RESET_ALL}"
+                    f"{Fore.MAGENTA+Style.BRIGHT}-{Style.RESET_ALL}"
                     f"{Fore.RED+Style.BRIGHT} {str(e)} {Style.RESET_ALL}"
                 )
 
         return None
     
-    async def request_faucet(self, address: str, proxy=None, retries=5):
+    async def request_faucet(self, address: str, turnstile_token, proxy=None, retries=5):
         url = f"{self.BASE_API}/faucet/request"
-        data = json.dumps({"token":"HLS", "chain":"helios-testnet", "amount":1})
+        data = json.dumps({"token":"HLS", "chain":"helios-testnet", "amount":1, "turnstileToken":turnstile_token})
         headers = {
             **self.headers,
             "Authorization": f"Bearer {self.access_tokens[address]}",
@@ -622,8 +689,11 @@ class Helios:
                     await asyncio.sleep(5)
                     continue
                 self.log(
-                    f"{Fore.CYAN+Style.BRIGHT}Message   :{Style.RESET_ALL}"
-                    f"{Fore.RED+Style.BRIGHT} {str(e)} {Style.RESET_ALL}"
+                    f"{Fore.MAGENTA+Style.BRIGHT} ● {Style.RESET_ALL}"
+                    f"{Fore.BLUE+Style.BRIGHT}Status  :{Style.RESET_ALL}"
+                    f"{Fore.RED+Style.BRIGHT} Not Claimed {Style.RESET_ALL}"
+                    f"{Fore.MAGENTA+Style.BRIGHT}-{Style.RESET_ALL}"
+                    f"{Fore.YELLOW+Style.BRIGHT} {str(e)} {Style.RESET_ALL}"
                 )
 
         return None
@@ -722,11 +792,34 @@ class Helios:
             is_eligible = check.get("isEligible", False)
 
             if is_eligible:
-                request = await self.request_faucet(address, proxy)
-                if request and request.get("success", False):
+                self.log(f"{Fore.CYAN+Style.BRIGHT}Faucet    :{Style.RESET_ALL}")
+
+                self.log(
+                    f"{Fore.MAGENTA+Style.BRIGHT} ● {Style.RESET_ALL}"
+                    f"{Fore.YELLOW+Style.BRIGHT}Solving Captcha Turnstile...{Style.RESET_ALL}"
+                )
+
+                turnstile_token = await self.solve_cf_turnstile(proxy)
+                if turnstile_token:
                     self.log(
-                        f"{Fore.CYAN+Style.BRIGHT}Faucet    :{Style.RESET_ALL}"
-                        f"{Fore.GREEN+Style.BRIGHT} 1 HLS Claimed Successfully {Style.RESET_ALL}"
+                        f"{Fore.MAGENTA+Style.BRIGHT} ● {Style.RESET_ALL}"
+                        f"{Fore.BLUE+Style.BRIGHT}Message :{Style.RESET_ALL}"
+                        f"{Fore.GREEN + Style.BRIGHT} Capctha Turnstile Solved Successfully{Style.RESET_ALL}"
+                    )
+
+                    request = await self.request_faucet(address, proxy)
+                    if request and request.get("success", False):
+                        self.log(
+                            f"{Fore.MAGENTA+Style.BRIGHT} ● {Style.RESET_ALL}"
+                            f"{Fore.BLUE+Style.BRIGHT}Status  :{Style.RESET_ALL}"
+                            f"{Fore.GREEN + Style.BRIGHT} 1 HLS Faucet Claimed Successfully {Style.RESET_ALL}"
+                        )
+
+                else:
+                    self.log(
+                        f"{Fore.MAGENTA+Style.BRIGHT} ● {Style.RESET_ALL}"
+                        f"{Fore.BLUE+Style.BRIGHT}Message :{Style.RESET_ALL}"
+                        f"{Fore.RED + Style.BRIGHT} Capctha Turnstile Not Solved {Style.RESET_ALL}"
                     )
 
             else:
@@ -779,7 +872,7 @@ class Helios:
             )
 
             validation_address = random.choice([
-                self.HLS_HEDGE_VALIDATION, self.HLS_PEER_VALIDATION, self.HLS_UNITY_VALIDATION,
+                self.HLS_HEDGE_VALIDATION, self.HLS_PEER_VALIDATION,
                 self.HLS_SUPRA_VALIDATION, self.HLS_INTER_VALIDATION
             ])
             validator_name = (
@@ -842,6 +935,10 @@ class Helios:
         try:
             with open('accounts.txt', 'r') as file:
                 accounts = [line.strip() for line in file if line.strip()]
+
+            capctha_key = self.load_2captcha_key()
+            if capctha_key:
+                self.CAPTCHA_KEY = capctha_key
 
             option, use_proxy_choice, rotate_proxy = self.print_question()
 
