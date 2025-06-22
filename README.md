@@ -16,7 +16,7 @@ Faucet claims, bridging, delegation – all hands-free.
 ## 🚀 Features
 
 ✅ Auto Fetch Account Info  
-✅ Auto Faucet Claim  
+✅ Auto Faucet Claim  - `Need 2captcha key`  
 ✅ Auto Bridge HLS → Sepolia  
 ✅ Auto Delegate HLS to Your Validator  
 ✅ **Auto Delegate HLS to Random Validator** (NEW)  
@@ -35,6 +35,7 @@ Faucet claims, bridging, delegation – all hands-free.
 
 - Python 3.9 or higher  
 - Pip (Python package manager)
+- 2captcha key (Optional)
 
 ---
 
@@ -75,6 +76,13 @@ pip install library_name==required_version
 ```bash
 your_private_key_1
 your_private_key_2
+```
+
+* **2captcha_key.txt:** 
+ You will find the file `2captcha_key.txt` inside the project directory. Make sure `2captcha_key.txt` contains data that matches the format expected by the script. Here are examples of file formats:  
+
+```bash
+    your_2captcha_key
 ```
 
 * **proxy.txt**
