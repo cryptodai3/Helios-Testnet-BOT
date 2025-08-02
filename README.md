@@ -1,29 +1,39 @@
 # ☀️ Helios Testnet BOT - CDY
 
-Automate your journey through the Helios Testnet in full drip-mode 😎  
-Faucet claims, bridging, delegation – all hands-free.
+Automate your journey through Helios ecosystem projects - Testnet operations and SolariSwap DEX automation in full drip-mode 😎  
 
 ---
 
 ## 🔗 Quick Start
 
-- Register here: [Helios Testnet](https://testnet.helioschain.network/?code=GENESIS-OLYMPIC-636)
+### Helios Testnet Bot
+- Register: [Helios Testnet](https://testnet.helioschain.network/?code=GENESIS-OLYMPIC-636)
 - Use Invite Code: `GENESIS-OLYMPIC-636`
-- Connect your Discord to register
+- Connect Discord to register
+
+### SolariSwap Bot
+- Register: [SolariSwap](https://solariswap.finance/)
+- Use same wallet as Helios Testnet
 
 ---
 
 ## 🚀 Features
 
+### Helios Testnet Bot (`bot1.py`)
 ✅ Auto Fetch Account Info  
-✅ Auto Faucet Claim  - `Need 2captcha key`  
+✅ Auto Faucet Claim (Requires 2captcha key)  
 ✅ Auto Bridge HLS → Sepolia  
-✅ Auto Delegate HLS to Your Validator  
-✅ **Auto Delegate HLS to Random Validator** (NEW)  
-✅ Built-in Proxy Options:  
-  1. Free Public Proxies ([Proxyscrape](https://proxyscrape.com/free-proxy-list))  
-  2. Private Proxies  
-  3. Run Without Proxy  
+✅ Auto Delegate HLS to Validators  
+✅ Auto Claim Delegation Rewards  
+✅ Auto Deploy Token Contract  
+✅ Proxy Support (Public/Private/None)  
+✅ Smart Proxy Rotation  
+✅ Multi-Account Support  
+
+### SolariSwap Bot (`bot2.py`)
+✅ Auto Get Account Information  
+✅ Auto Execute Random Swaps  
+✅ Proxy Support (Public/Private/None)  
 ✅ Smart Proxy Rotation  
 ✅ Multi-Account Support  
 
@@ -33,93 +43,114 @@ Faucet claims, bridging, delegation – all hands-free.
 
 ## 🛠️ Requirements
 
-- Python 3.9 or higher  
-- Pip (Python package manager)
-- 2captcha key (Optional)
+- Python 3.9+ 
+- Pip package manager
+- 2captcha key (For Helios faucet claims only)
 
 ---
 
 ## ⚙️ Installation
 
-1. **Clone Repo**
+1. **Clone Repository**
 ```bash
 git clone https://github.com/cryptodai3/Helios-Testnet-BOT.git
-````
-```bash
 cd Helios-Testnet-BOT
-````
+```
 
 2. **Install Dependencies**
-
 ```bash
 pip install -r requirements.txt
-````
- or
+```
+or
 ```bash
 pip3 install -r requirements.txt
 ```
 
-3. **(Optional) Fix library version mismatch**
-
+3. **Verify Library Versions**  
+If encountering issues, check and match these versions:
 ```bash
-pip show library_name
-pip uninstall library_name
-pip install library_name==required_version
+pip show web3 eth-account eth-utils cryptography
+pip uninstall <mismatched_lib>
+pip install <lib_name>==<required_version>
 ```
 
 ---
 
-## 🧾 Setup Files
+## 🧾 Configuration Files
 
-* **accounts.txt**
-
+### Shared Files:
+1. **accounts.txt** (Both bots)
 ```bash
-your_private_key_1
-your_private_key_2
+private_key_1
+private_key_2
 ```
 
-* **2captcha_key.txt:** 
- You will find the file `2captcha_key.txt` inside the project directory. Make sure `2captcha_key.txt` contains data that matches the format expected by the script. Here are examples of file formats:  
-
-```bash
-    your_2captcha_key
-```
-
-* **proxy.txt**
-
+2. **proxy.txt** (Both bots)
 ```bash
 ip:port
 http://ip:port
 http://user:pass@ip:port
 ```
 
----
-
-## ▶️ Run Bot
-
+### Helios Exclusive:
+3. **2captcha_key.txt** (Helios bot only)
 ```bash
-python bot.py
-```
- or
-```bash
-python3 bot.py
+your_2captcha_api_key
 ```
 
 ---
-## Happy Farming! 🚀🌾
 
+## ▶️ Run Bots
+
+**Helios Testnet Bot:**
+```bash
+python bot1.py
+# or
+python3 bot1.py
+```
+
+**SolariSwap Bot:**
+```bash
+python bot2.py
+# or
+python3 bot2.py
+```
+
+---
+
+## ☕ Support Development
+
+Consider supporting our work:
+
+- **EVM:** `0x3b94Ff1611773171E06047C0041099CccCFC609F`
+
+---
+
+## 🔒 Security & Disclaimer
+
+### ⚠️ Important
+- **TESTNET USE ONLY** - Never use mainnet wallets
+- **ZERO LIABILITY** - Use at your own risk
+- **DYOR** - Always audit code before execution
+
+### 🔐 Best Practices
+1. Use dedicated testnet wallets
+2. Never expose private keys
+3. Verify all contract interactions
+4. Monitor bot activities regularly
+
+---
+
+## 🙌 Community Support
+
+Help us improve:
+- ⭐ Star the repository
+- 🐛 Report issues
+- 💡 Suggest features
+- 📢 Share with your community
+
+**Happy Farming! 🚀🌾**  
 *Brought to you by [CryptoDai3](https://t.me/cryptodai3) X [YetiDAO](https://t.me/YetiDAO)*
-
----
-
-## ☕ Buy Me a Coffee
-
-* **EVM:** `0x49bb35693e9631760d2f3519e7db1dd618580a6a`
-* **TON:** `UQDDYNRWZI12zMfXYBoy300ydECC5uouMUFLd_yZa6ZO4Jsm`
-* **SOL:** `2PhLDFnyX8whHDMBbfGSFoLnVEsei6TYxyiqpDzPGyT1`
-* **SUI:** `0xf3b008f8aac4b92195176aad27a892c565c216fd5c07bc99c70edb8394e23b59`
-
----
 
 ## 🔒 Safety & Support
 
