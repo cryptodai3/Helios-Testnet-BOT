@@ -26,7 +26,8 @@ Automate your journey through Helios ecosystem projects - Testnet operations and
 ✅ Auto Delegate HLS to Validators  
 ✅ Auto Claim Delegation Rewards  
 ✅ Auto Deploy Token Contract  
-✅ Auto Vote Governance Proposal  
+✅ Auto Vote Governance Proposal 
+✅ Auto Create Governance Proposal 
 ✅ Proxy Support (Public/Private/None)  
 ✅ Smart Proxy Rotation  
 ✅ Multi-Account Support  
